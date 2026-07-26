@@ -1,88 +1,54 @@
-body {
-  background-color: #f0f2f5;
-  margin: 0;
-  padding: 0;
-}
+/* Keeping styling very basic for learning purposes */
 
-.container {
-  max-width: 900px;
-  margin: 0 auto;
+.main-container {
   padding: 20px;
-  font-family: Arial, sans-serif;
+  font-family: sans-serif;
 }
 
-h1, h2 {
-  color: #333;
+.form-container {
+  margin-bottom: 30px;
 }
 
-.forms-wrapper {
-  display: flex;
-  gap: 30px;
-  margin-bottom: 40px;
+.box {
+  border: 2px solid black;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #f4f4f4;
 }
 
-.form-section {
-  flex: 1;
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+label {
+  display: inline-block;
+  width: 70px;
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
 input, textarea, select {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
+  margin-bottom: 10px;
+  padding: 5px;
+  width: 250px;
 }
 
 button {
-  padding: 10px;
-  background-color: #007bff;
+  background-color: blue;
   color: white;
+  padding: 8px 15px;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  font-weight: bold;
+  margin-top: 5px;
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: darkblue;
 }
 
-.posts-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.post-item {
+  border: 1px solid gray;
+  padding: 10px;
+  margin-bottom: 15px;
 }
 
-.post-card {
-  background: #fff;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.post-card h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-}
-
-.post-card p {
-  margin-bottom: 10px;
-  color: #555;
-}
-
-.post-card small {
-  color: #777;
-  display: block;
-  border-top: 1px solid #eee;
-  padding-top: 10px;
+.author-info {
+  font-size: 0.9em;
+  color: darkred;
 }

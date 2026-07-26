@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-// Using environment variable for local development
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+// Mentor feedback: Vite uses import.meta.env and VITE_ prefix
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 function App() {
   const [users, setUsers] = useState([]);
@@ -15,8 +15,9 @@ function App() {
   const [postContent, setPostContent] = useState('');
   const [selectedAuthor, setSelectedAuthor] = useState('');
 
+  // Load data when page loads
   useEffect(() => {
-    console.log("App mounted, fetching initial data...");
+    console.log("Page loaded. Fetching data from:", API_URL);
     fetchUsers();
     fetchPosts();
   }, []);
@@ -25,9 +26,10 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/users`);
       const data = await response.json();
+      console.log("Users fetched:", data);
       setUsers(data);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Fetch users error:', error);
     }
   };
 
@@ -35,15 +37,16 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/posts`);
       const data = await response.json();
+      console.log("Posts fetched (should have author data populated):", data);
       setPosts(data);
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error('Fetch posts error:', error);
     }
   };
 
   const handleUserSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting new user...");
+    console.log("Attempting to add user...");
     
     try {
       const response = await fetch(`${API_URL}/users`, {
@@ -52,28 +55,32 @@ function App() {
         body: JSON.stringify({ name: userName, email: userEmail })
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        console.log("User created!");
+        console.log("Success adding user!");
         setUserName('');
         setUserEmail('');
-        fetchUsers(); // refresh the list
+        fetchUsers(); // get the updated list
       } else {
-        console.log("Server rejected user creation.");
-        alert('Failed to create user. Email might be taken.');
+        console.log("Backend error response:", data);
+        // Shows the specific 11000 duplicate email error message from backend
+        alert(data.message || 'Failed to create user');
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Network error:', error);
     }
   };
 
   const handlePostSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedAuthor) {
-      alert('You need to select an author first');
+    
+    if (selectedAuthor === '') {
+      alert('You need to select an author first!');
       return;
     }
 
-    console.log("Submitting new post...");
+    console.log("Attempting to add post...");
     try {
       const response = await fetch(`${API_URL}/posts`, {
         method: 'POST',
@@ -81,102 +88,108 @@ function App() {
         body: JSON.stringify({
           title: postTitle,
           content: postContent,
-          authorId: selectedAuthor
+          authorId: selectedAuthor 
         })
       });
 
       if (response.ok) {
-        console.log("Post created!");
+        console.log("Success adding post!");
         setPostTitle('');
         setPostContent('');
         setSelectedAuthor('');
-        fetchPosts(); // refresh the list
+        fetchPosts(); // get the updated list
       } else {
-        alert('Failed to create post.');
+        alert('Failed to create post');
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Network error:', error);
     }
   };
 
   return (
-    <div className="container">
-      <h1>Mongoose Referencing Demo</h1>
+    <div className="main-container">
+      <h1>Mongoose Populate App</h1>
 
-      <div className="forms-wrapper">
-        <div className="form-section">
-          <h2>Create User</h2>
+      <div className="form-container">
+        <div className="box">
+          <h2>1. Add a User</h2>
           <form onSubmit={handleUserSubmit}>
+            <label>Name: </label>
             <input 
               type="text" 
-              placeholder="Name" 
               value={userName} 
               onChange={(e) => setUserName(e.target.value)} 
               required 
             />
+            <br />
+            <label>Email: </label>
             <input 
               type="email" 
-              placeholder="Email" 
               value={userEmail} 
               onChange={(e) => setUserEmail(e.target.value)} 
               required 
             />
-            <button type="submit">Add User</button>
+            <br />
+            <button type="submit">Save User</button>
           </form>
         </div>
 
-        <div className="form-section">
-          <h2>Create Post</h2>
+        <div className="box">
+          <h2>2. Add a Post</h2>
           <form onSubmit={handlePostSubmit}>
+            <label>Title: </label>
             <input 
               type="text" 
-              placeholder="Post Title" 
               value={postTitle} 
               onChange={(e) => setPostTitle(e.target.value)} 
               required 
             />
+            <br />
+            <label>Content: </label>
             <textarea 
-              placeholder="Post Content" 
               value={postContent} 
               onChange={(e) => setPostContent(e.target.value)} 
               required 
             />
+            <br />
+            <label>Author: </label>
             <select 
               value={selectedAuthor} 
               onChange={(e) => setSelectedAuthor(e.target.value)} 
               required
             >
-              <option value="" disabled>Select an Author</option>
+              <option value="">-- Choose Author --</option>
               {users.map((user) => (
                 <option key={user._id} value={user._id}>
-                  {user.name} 
+                  {user.name}
                 </option>
               ))}
             </select>
-            <button type="submit">Add Post</button>
+            <br />
+            <button type="submit">Save Post</button>
           </form>
         </div>
       </div>
 
-      <div className="posts-section">
-        <h2>All Posts</h2>
-        {posts.length === 0 ? (
-          <p>No posts yet. Go make one!</p>
-        ) : (
-          <div className="posts-grid">
-            {posts.map((post) => (
-              <div key={post._id} className="post-card">
-                <h3>{post.title}</h3>
-                <p>{post.content}</p>
-                <small>
-                  {/* Checking if author exists because populated data might be missing */}
-                  <strong>Author:</strong> {post.author ? post.author.name : 'Unknown User'} 
-                </small>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <hr />
+
+      <h2>Posts List</h2>
+      {posts.length === 0 ? (
+        <p>No posts added yet.</p>
+      ) : (
+        <div className="post-list">
+          {posts.map((post) => (
+            <div key={post._id} className="post-item">
+              <h3>{post.title}</h3>
+              <p>{post.content}</p>
+              <p className="author-info">
+                <strong>Written by:</strong> {post.author ? post.author.name : 'Unknown User'} 
+                ({post.author ? post.author.email : 'No email'})
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
