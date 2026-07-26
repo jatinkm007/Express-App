@@ -37,7 +37,8 @@ function App() {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch('http://localhost:5000/posts');
+      // FIXED: Updated to Render URL
+      const response = await fetch('https://express-app-60sj.onrender.com/posts');
       const data = await response.json();
       if (response.ok) {
         setPosts(data);
@@ -53,7 +54,8 @@ function App() {
   const handleUserSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/users', {
+      // FIXED: Updated to Render URL
+      const response = await fetch('https://express-app-60sj.onrender.com/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: userName, email: userEmail })
@@ -81,7 +83,8 @@ function App() {
     if (!selectedAuthor) return alert('Please select an author first!');
 
     try {
-      const response = await fetch('http://localhost:5000/posts', {
+      // FIXED: Updated to Render URL
+      const response = await fetch('https://express-app-60sj.onrender.com/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
