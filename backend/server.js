@@ -15,77 +15,77 @@ app.use(express.json());
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Connected to MongoDB Atlas'))
-  .catch((err) => console.error('MongoDB connection error:', err));
-
-// Basic route for the home page
-app.get('/', (req, res) => {
-  res.send('My Mongoose API is running successfully on Render!');
-});
+  .catch((err) => console.log('Uh oh, MongoDB connection error:', err));
 
 // --- USER ROUTES ---
 
-// GET /users - Fetch all users
+// GET all users
 app.get('/users', async (req, res) => {
+  console.log("Fetching all users...");
   try {
     const users = await User.find();
-    res.status(200).json(users);
+    res.json(users);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching users: ' + error.message });
+    console.log("Error in GET /users", error);
+    res.status(500).json({ message: 'Error fetching users' });
   }
 });
 
-// POST /users - Create a new user
+// POST new user
 app.post('/users', async (req, res) => {
+  console.log("Creating user with body:", req.body);
   try {
-    const { name, email } = req.body;
-    const newUser = new User({ name, email });
+    const newUser = new User({ 
+      name: req.body.name, 
+      email: req.body.email 
+    });
     await newUser.save();
+    console.log("User saved:", newUser);
     res.status(201).json(newUser);
   } catch (error) {
-    // Check for duplicate key error (MongoDB code 11000)
-    if (error.code === 11000) {
-      return res.status(400).json({ message: 'User with this email already exists.' });
-    }
+    // Mentor feedback: Simplified error handling
+    console.log("Failed to save user:", error);
     res.status(400).json({ message: error.message });
   }
 });
 
 // --- POST ROUTES ---
 
-// GET /posts - Fetch all posts with populated Author data
+// GET all posts and populate the author
 app.get('/posts', async (req, res) => {
+  console.log("Fetching posts and populating authors...");
   try {
+    // Populating author data here!
     const posts = await Post.find().populate('author', 'name email');
-    res.status(200).json(posts);
+    res.json(posts);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching posts: ' + error.message });
+    console.log("Error in GET /posts", error);
+    res.status(500).json({ message: 'Error fetching posts' });
   }
 });
 
-// POST /posts - Create a new post referencing a User
+// POST new post
 app.post('/posts', async (req, res) => {
+  console.log("Creating post with body:", req.body);
   try {
-    const { title, content, authorId, author } = req.body;
-    
     const newPost = new Post({
-      title,
-      content,
-      author: authorId || author
+      title: req.body.title,
+      content: req.body.content,
+      author: req.body.authorId
     });
 
     await newPost.save();
     
-    // Populate author details before returning response
+    // populating author details so frontend can show them immediately
     const populatedPost = await newPost.populate('author', 'name email');
     res.status(201).json(populatedPost);
   } catch (error) {
+    console.log("Failed to save post:", error);
     res.status(400).json({ message: error.message });
   }
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server is up and listening on port ${PORT}`);
 });
-
-module.exports = app;

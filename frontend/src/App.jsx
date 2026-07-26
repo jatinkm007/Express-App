@@ -1,35 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
+// Using environment variable for local development
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 function App() {
-  // State for fetching data
   const [users, setUsers] = useState([]);
   const [posts, setPosts] = useState([]);
 
-  // State for User Form
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
 
-  // State for Post Form
   const [postTitle, setPostTitle] = useState('');
   const [postContent, setPostContent] = useState('');
   const [selectedAuthor, setSelectedAuthor] = useState('');
 
-  // Fetch initial data on component mount
   useEffect(() => {
+    console.log("App mounted, fetching initial data...");
     fetchUsers();
     fetchPosts();
   }, []);
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('https://express-app-60sj.onrender.com/users');
+      const response = await fetch(`${API_URL}/users`);
       const data = await response.json();
-      if (response.ok) {
-        setUsers(data);
-      } else {
-        console.error('Error fetching users:', data.message);
-      }
+      setUsers(data);
     } catch (error) {
       console.error('Error fetching users:', error);
     }
@@ -37,54 +33,49 @@ function App() {
 
   const fetchPosts = async () => {
     try {
-      // FIXED: Updated to Render URL
-      const response = await fetch('https://express-app-60sj.onrender.com/posts');
+      const response = await fetch(`${API_URL}/posts`);
       const data = await response.json();
-      if (response.ok) {
-        setPosts(data);
-      } else {
-        console.error('Error fetching posts:', data.message);
-      }
+      setPosts(data);
     } catch (error) {
       console.error('Error fetching posts:', error);
     }
   };
 
-  // Handle User Submission
   const handleUserSubmit = async (e) => {
     e.preventDefault();
+    console.log("Submitting new user...");
+    
     try {
-      // FIXED: Updated to Render URL
-      const response = await fetch('https://express-app-60sj.onrender.com/users', {
+      const response = await fetch(`${API_URL}/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: userName, email: userEmail })
       });
 
-      const data = await response.json();
-
       if (response.ok) {
+        console.log("User created!");
         setUserName('');
         setUserEmail('');
-        fetchUsers();
-        alert('User created successfully!');
+        fetchUsers(); // refresh the list
       } else {
-        alert(data.message || 'Failed to create user.');
+        console.log("Server rejected user creation.");
+        alert('Failed to create user. Email might be taken.');
       }
     } catch (error) {
-      console.error('Failed to create user:', error);
-      alert('A server error occurred. Is your backend running?');
+      console.error('Error:', error);
     }
   };
 
-  // Handle Post Submission
   const handlePostSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedAuthor) return alert('Please select an author first!');
+    if (!selectedAuthor) {
+      alert('You need to select an author first');
+      return;
+    }
 
+    console.log("Submitting new post...");
     try {
-      // FIXED: Updated to Render URL
-      const response = await fetch('https://express-app-60sj.onrender.com/posts', {
+      const response = await fetch(`${API_URL}/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -94,20 +85,17 @@ function App() {
         })
       });
 
-      const data = await response.json();
-
       if (response.ok) {
+        console.log("Post created!");
         setPostTitle('');
         setPostContent('');
         setSelectedAuthor('');
-        fetchPosts();
-        alert('Post created successfully!');
+        fetchPosts(); // refresh the list
       } else {
-        alert(data.message || 'Failed to create post.');
+        alert('Failed to create post.');
       }
     } catch (error) {
-      console.error('Failed to create post:', error);
-      alert('A server error occurred. Is your backend running?');
+      console.error('Error:', error);
     }
   };
 
@@ -116,7 +104,6 @@ function App() {
       <h1>Mongoose Referencing Demo</h1>
 
       <div className="forms-wrapper">
-        {/* User Creation Form */}
         <div className="form-section">
           <h2>Create User</h2>
           <form onSubmit={handleUserSubmit}>
@@ -138,7 +125,6 @@ function App() {
           </form>
         </div>
 
-        {/* Post Creation Form */}
         <div className="form-section">
           <h2>Create Post</h2>
           <form onSubmit={handlePostSubmit}>
@@ -163,7 +149,7 @@ function App() {
               <option value="" disabled>Select an Author</option>
               {users.map((user) => (
                 <option key={user._id} value={user._id}>
-                  {user.name} ({user.email})
+                  {user.name} 
                 </option>
               ))}
             </select>
@@ -172,11 +158,10 @@ function App() {
         </div>
       </div>
 
-      {/* Display Posts with Populated User Data */}
       <div className="posts-section">
         <h2>All Posts</h2>
         {posts.length === 0 ? (
-          <p>No posts available.</p>
+          <p>No posts yet. Go make one!</p>
         ) : (
           <div className="posts-grid">
             {posts.map((post) => (
@@ -184,8 +169,8 @@ function App() {
                 <h3>{post.title}</h3>
                 <p>{post.content}</p>
                 <small>
-                  <strong>Author:</strong> {post.author ? post.author.name : 'Unknown User'}{' '}
-                  ({post.author ? post.author.email : 'N/A'})
+                  {/* Checking if author exists because populated data might be missing */}
+                  <strong>Author:</strong> {post.author ? post.author.name : 'Unknown User'} 
                 </small>
               </div>
             ))}
