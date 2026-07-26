@@ -9,10 +9,9 @@ const postSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  // This is where the referencing happens
   author: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', 
+    ref: 'User',
     required: true
   }
 });

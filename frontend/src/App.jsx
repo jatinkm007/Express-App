@@ -23,9 +23,13 @@ function App() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/users');
+      const response = await fetch('https://express-app-60sj.onrender.com/users');
       const data = await response.json();
-      setUsers(data);
+      if (response.ok) {
+        setUsers(data);
+      } else {
+        console.error('Error fetching users:', data.message);
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
     }
@@ -35,7 +39,11 @@ function App() {
     try {
       const response = await fetch('http://localhost:5000/posts');
       const data = await response.json();
-      setPosts(data);
+      if (response.ok) {
+        setPosts(data);
+      } else {
+        console.error('Error fetching posts:', data.message);
+      }
     } catch (error) {
       console.error('Error fetching posts:', error);
     }
@@ -50,7 +58,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: userName, email: userEmail })
       });
-      
+
       const data = await response.json();
 
       if (response.ok) {
@@ -59,7 +67,7 @@ function App() {
         fetchUsers();
         alert('User created successfully!');
       } else {
-        alert(data.message); 
+        alert(data.message || 'Failed to create user.');
       }
     } catch (error) {
       console.error('Failed to create user:', error);
@@ -70,7 +78,7 @@ function App() {
   // Handle Post Submission
   const handlePostSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedAuthor) return alert("Please select an author first!");
+    if (!selectedAuthor) return alert('Please select an author first!');
 
     try {
       const response = await fetch('http://localhost:5000/posts', {
@@ -82,15 +90,21 @@ function App() {
           authorId: selectedAuthor
         })
       });
+
+      const data = await response.json();
+
       if (response.ok) {
         setPostTitle('');
         setPostContent('');
         setSelectedAuthor('');
-        fetchPosts(); // Refresh the posts list to show the new post
+        fetchPosts();
         alert('Post created successfully!');
+      } else {
+        alert(data.message || 'Failed to create post.');
       }
     } catch (error) {
       console.error('Failed to create post:', error);
+      alert('A server error occurred. Is your backend running?');
     }
   };
 
@@ -144,7 +158,7 @@ function App() {
               required
             >
               <option value="" disabled>Select an Author</option>
-              {users.map(user => (
+              {users.map((user) => (
                 <option key={user._id} value={user._id}>
                   {user.name} ({user.email})
                 </option>
@@ -158,14 +172,16 @@ function App() {
       {/* Display Posts with Populated User Data */}
       <div className="posts-section">
         <h2>All Posts</h2>
-        {posts.length === 0 ? <p>No posts available.</p> : (
+        {posts.length === 0 ? (
+          <p>No posts available.</p>
+        ) : (
           <div className="posts-grid">
-            {posts.map(post => (
+            {posts.map((post) => (
               <div key={post._id} className="post-card">
                 <h3>{post.title}</h3>
                 <p>{post.content}</p>
                 <small>
-                  <strong>Author:</strong> {post.author ? post.author.name : 'Unknown User'} 
+                  <strong>Author:</strong> {post.author ? post.author.name : 'Unknown User'}{' '}
                   ({post.author ? post.author.email : 'N/A'})
                 </small>
               </div>
